@@ -1,23 +1,24 @@
+version: "2"
+
 run:
   timeout: 5m
 
 linters:
+  default: none
   enable:
     - errcheck
     - govet
     - ineffassign
     - staticcheck
     - unused
-    - gofmt
-    - goimports
     - misspell
     - unconvert
 
-linters-settings:
-  goimports:
-    local-prefixes: github.com/giosakti/pluto
-
-issues:
-  exclude-use-default: false
-  max-issues-per-linter: 0
-  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/giosakti/pluto
