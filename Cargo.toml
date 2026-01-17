@@ -1,0 +1,31 @@
+[package]
+name = "agnx"
+version = "0.1.0"
+edition = "2024"
+description = "A minimal and fast self-hosted runtime for durable and portable AI agents"
+license = "MIT"
+repository = "https://github.com/giosakti/agnx"
+
+[dependencies]
+# HTTP server
+axum = "0.8"
+tokio = { version = "1", features = ["full"] }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde-saphyr = "0.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[build-dependencies]
+# Build info injection is handled via build.rs
+
+[[bin]]
+name = "agnx"
+path = "src/main.rs"
