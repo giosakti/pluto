@@ -43,10 +43,13 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         config.port = port;
     }
 
+    let api_v1 = Router::new().route("/agents", get(handlers::list_agents));
+
     let app = Router::new()
         .route("/livez", get(handlers::livez))
         .route("/readyz", get(handlers::readyz))
         .route("/version", get(handlers::version))
+        .nest("/api/v1", api_v1)
         .route("/example-bad-request", get(handlers::example_bad_request))
         .route("/example-not-found", get(handlers::example_not_found))
         .route(
