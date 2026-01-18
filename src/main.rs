@@ -1,12 +1,17 @@
+mod build_info;
 mod config;
+mod handlers;
 mod response;
 
+use axum::routing::get;
+use axum::Router;
 use clap::Parser;
 use config::Config;
+use std::net::{IpAddr, SocketAddr};
 
 /// Agnx - A minimal and fast self-hosted runtime for durable and portable AI agents
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version = build_info::VERSION_STRING, about, long_about = None)]
 struct Args {
     /// Path to configuration file
     #[arg(short, long, default_value = "config.yaml")]
@@ -17,8 +22,9 @@ struct Args {
     port: Option<u16>,
 }
 
-fn main() -> std::process::ExitCode {
-    match run() {
+#[tokio::main]
+async fn main() -> std::process::ExitCode {
+    match run().await {
         Ok(()) => std::process::ExitCode::SUCCESS,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -27,7 +33,7 @@ fn main() -> std::process::ExitCode {
     }
 }
 
-fn run() -> Result<(), Box<dyn std::error::Error>> {
+async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     let mut config = Config::load(&args.config)?;
@@ -37,6 +43,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         config.port = port;
     }
 
-    println!("Starting server on {}:{}", config.host, config.port);
+    let app = Router::new()
+        .route("/version", get(handlers::version));
+
+    let ip: IpAddr = config.host.parse()?;
+    let addr = SocketAddr::new(ip, config.port);
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+
+    println!("Starting server on {addr}");
+    axum::serve(listener, app).await?;
     Ok(())
 }
