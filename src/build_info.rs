@@ -34,3 +34,31 @@ impl Default for BuildInfo {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_build_info_new() {
+        let info = BuildInfo::new();
+        assert!(!info.version.is_empty());
+        assert!(!info.commit.is_empty());
+        assert!(!info.build_date.is_empty());
+    }
+
+    #[test]
+    fn test_build_info_default() {
+        let info = BuildInfo::default();
+        assert_eq!(info.version, VERSION);
+        assert_eq!(info.commit, COMMIT);
+        assert_eq!(info.build_date, BUILD_DATE);
+    }
+
+    #[test]
+    fn test_version_string_format() {
+        assert!(VERSION_STRING.contains(VERSION));
+        assert!(VERSION_STRING.contains("commit:"));
+        assert!(VERSION_STRING.contains("built:"));
+    }
+}

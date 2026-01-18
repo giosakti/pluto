@@ -76,3 +76,83 @@ impl std::error::Error for ConfigError {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::{NamedTempFile, TempDir};
+
+    #[test]
+    fn test_default_config() {
+        let config = Config::default();
+        assert_eq!(config.server.host, "0.0.0.0");
+        assert_eq!(config.server.port, 8080);
+        assert_eq!(config.server.request_timeout, 30);
+    }
+
+    #[test]
+    fn test_load_missing_file_returns_defaults() {
+        let tmp_dir = TempDir::new().unwrap();
+        let missing_path = tmp_dir.path().join("missing-config.yaml");
+        let config = Config::load(missing_path.to_str().unwrap()).unwrap();
+        assert_eq!(config.server.host, "0.0.0.0");
+        assert_eq!(config.server.port, 8080);
+    }
+
+    #[test]
+    fn test_load_valid_yaml() {
+        let mut file = NamedTempFile::new().unwrap();
+        writeln!(
+            file,
+            r#"
+server:
+  host: "127.0.0.1"
+  port: 3000
+  request_timeout: 60
+"#
+        )
+        .unwrap();
+
+        let config = Config::load(file.path().to_str().unwrap()).unwrap();
+        assert_eq!(config.server.host, "127.0.0.1");
+        assert_eq!(config.server.port, 3000);
+        assert_eq!(config.server.request_timeout, 60);
+    }
+
+    #[test]
+    fn test_load_partial_yaml_uses_defaults() {
+        let mut file = NamedTempFile::new().unwrap();
+        writeln!(
+            file,
+            r#"
+server:
+  port: 9000
+"#
+        )
+        .unwrap();
+
+        let config = Config::load(file.path().to_str().unwrap()).unwrap();
+        assert_eq!(config.server.host, "0.0.0.0"); // default
+        assert_eq!(config.server.port, 9000);
+        assert_eq!(config.server.request_timeout, 30); // default
+    }
+
+    #[test]
+    fn test_load_invalid_yaml() {
+        let mut file = NamedTempFile::new().unwrap();
+        writeln!(file, "invalid: yaml: content: [").unwrap();
+
+        let result = Config::load(file.path().to_str().unwrap());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_config_error_display() {
+        let io_error = ConfigError::Io(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "test",
+        ));
+        assert!(io_error.to_string().contains("failed to read config file"));
+    }
+}

@@ -27,6 +27,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 [build-dependencies]
 # Build info injection is handled via build.rs
 
+[dev-dependencies]
+tempfile = "3"
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+
 [[bin]]
 name = "agnx"
 path = "src/main.rs"
