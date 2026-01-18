@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'cd \"$CLAUDE_PROJECT_DIR\" && if [ -f Cargo.toml ]; then cargo fmt --quiet 2>/dev/null || true; fi'",
+            "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "bash -lc 'cd \"$CLAUDE_PROJECT_DIR\" && if [ \"${AGNX_CLAUDE_RUST_TEST:-0}\" = \"1\" ] && [ -f Cargo.toml ]; then cargo test; fi'",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🔔 Claude notification'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
