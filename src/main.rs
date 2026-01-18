@@ -44,7 +44,13 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let app = Router::new()
-        .route("/version", get(handlers::version));
+        .route("/version", get(handlers::version))
+        .route("/example-bad-request", get(handlers::example_bad_request))
+        .route("/example-not-found", get(handlers::example_not_found))
+        .route(
+            "/example-internal-error",
+            get(handlers::example_internal_error),
+        );
 
     let ip: IpAddr = config.host.parse()?;
     let addr = SocketAddr::new(ip, config.port);
